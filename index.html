@@ -149,7 +149,7 @@ async function sendMessage() {
     chatBox.scrollTop = chatBox.scrollHeight;
 
     try {
-        const response = await fetch("https://nasri-ai-app-builder-pro.onrender.com/sendMessage", {
+        const response = await fetch("https://nasri-ai-backend.onrender.com/sendMessage", {
             method:"POST",
             headers:{"Content-Type":"application/json"},
             body:JSON.stringify({message})
