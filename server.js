@@ -1,47 +1,24 @@
-const express = require("express");
-const cors = require("cors");
-require("dotenv").config();
+const express = require('express');
+const cors = require('cors');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app = express();
-
 app.use(cors());
 app.use(express.json());
 
-// index.html serve کرنے کے لیے
-app.use(express.static(__dirname));
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-app.post("/chat", async (req, res) => {
-  try {
-    const userMessage = req.body.message;
-
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + process.env.OPENAI_API_KEY
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "user", content: userMessage }
-        ]
-      })
-    });
-
-    const data = await response.json();
-
-    res.json({
-      reply: data.choices?.[0]?.message?.content || "No response"
-    });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ reply: "Server error" });
-  }
+app.post('/sendmessage', async (req, res) => {
+    try {
+        const { message } = req.body;
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const result = await model.generateContent(message);
+        const response = await result.response;
+        res.json({ reply: response.text() });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Server error" });
+    }
 });
 
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
-});
+app.listen(process.env.PORT || 10000);
